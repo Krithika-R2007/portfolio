@@ -1,0 +1,19 @@
+{
+  "name": "portfolio-enhancement",
+  "version": "1.0.0",
+  "description": "Enhanced portfolio with animations and custom cursor",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "fast-check": "^3.15.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/test-setup.js"]
+  }
+}
