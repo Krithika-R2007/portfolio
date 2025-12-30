@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requiem Records - Gothic Horror Web App | Krithika's Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6b21a8;
+            --primary-light: #8b5cf6;
+            --primary-dark: #581c87;
+            --secondary: #c084fc;
+            --text: #f3e8ff;
+            --text-light: #d8b4fe;
+            --bg: #1e1b2e;
+            --bg-card: #2d1b69;
+            --bg-card-hover: #3c2a7a;
+            --shadow: rgba(107, 33, 168, 0.3);
+            --success: #10b981;
+            --transition: all 0.3s ease;
+            --horror-red: #8b0000;
+            --horror-dark: #2c1810;
+            --horror-accent: #ff6b6b;
+        }
+
+        .light-mode {
+            --primary: #8b5cf6;
+            --primary-light: #a78bfa;
+            --primary-dark: #deccfd;
+            --secondary: #6d28d9;
+            --text: #1f2937;
+            --text-light: #4b5563;
+            --bg: #f5f3ff;
+            --bg-card: #ede9fe;
+            --bg-card-hover: #ddd6fe;
+            --shadow: rgba(139, 92, 246, 0.2);
+            --success: #059669;
+            --horror-red: #dc2626;
+            --horror-dark: #7c2d12;
+            --horror-accent: #ef4444;
+        }
+
+        .cursor, .cursor-follower, .cursor-trail {
+            /* Cute cursor elements will be created dynamically */
+        }
+
+        /* Personal breathing animation for idle state */
+        @keyframes personalPulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 
+                    0 0 20px rgba(139, 92, 246, 0.4),
+                    0 0 40px rgba(139, 92, 246, 0.2);
+            }
+            100% { 
+                transform: scale(1.1);
+                box-shadow: 
+                    0 0 25px rgba(139, 92, 246, 0.6),
+                    0 0 50px rgba(139, 92, 246, 0.3),
+                    0 0 75px rgba(255, 215, 0, 0.2);
+            }
+        }
+
+        .cursor-follower {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px; /* Rounded square to match cursor */
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(192, 132, 252, 0.1));
+            border-image: linear-gradient(135deg, var(--primary-light), var(--secondary), #ffd700) 1;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+            backdrop-filter: blur(2px);
+            will-change: transform; /* Optimize for transform animations */
+        }
+
+        .cursor-trail {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 6px; /* Rounded square for consistency */
+            background: linear-gradient(135deg, var(--secondary), #ffd700);
+            pointer-events: none;
+            z-index: 9997;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+            will-change: transform; /* Optimize for transform animations */
+        }
+
+        /* General hover state */
+        .cursor.hover {
+            transform: scale(1.5);
+            background: var(--secondary);
+        }
+
+        .cursor-follower.hover {
+            transform: scale(1.3);
+            border-color: var(--secondary);
+            opacity: 0.5;
+        }
+
+        /* Button hover state */
+        .cursor.hover-button {
+            transform: scale(2);
+            background: var(--success);
+            box-shadow: 0 0 20px var(--success);
+        }
+
+        .cursor-follower.hover-button {
+            transform: scale(1.8);
+            border-color: var(--success);
+            border-width: 3px;
+            opacity: 0.8;
+        }
+
+        /* Link hover state */
+        .cursor.hover-link {
+            transform: scale(1.2);
+            background: var(--primary);
+            border-radius: 2px;
+            width: 30px;
+            height: 4px;
+        }
+
+        .cursor-follower.hover-link {
+            transform: scale(1.1);
+            border-color: var(--primary);
+            opacity: 0.6;
+        }
+
+        /* Interactive element hover state */
+        .cursor.hover-interactive {
+            transform: scale(1.8);
+            background: var(--secondary);
+            opacity: 0.8;
+        }
+
+        .cursor-follower.hover-interactive {
+            transform: scale(1.5);
+            border-color: var(--secondary);
+            border-width: 3px;
+            opacity: 0.4;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .cursor, .cursor-follower, .cursor-trail {
+                display: none;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Cute cursor will handle cursor hiding */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+        }
+
+        h1, h2, h3, h4 {
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(90deg, var(--horror-red), var(--horror-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 40px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--horror-red), var(--horror-accent));
+            border-radius: 2px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: var(--text-light);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(90deg, var(--horror-red), var(--horror-accent));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--horror-red);
+            color: var(--horror-accent);
+        }
+
+        .btn-outline:hover {
+            background: var(--horror-red);
+            color: white;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: rgba(30, 27, 46, 0.9);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .light-mode header {
+            background-color: rgba(245, 243, 255, 0.9);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo-img {
+            height: 100px;
+            width: auto;
+            transition: var(--transition);
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-light);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-light);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-light);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Project Hero Section */
+        .project-hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--horror-dark) 100%);
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--horror-red), transparent 70%);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .hero-text {
+            max-width: 600px;
+        }
+
+        .project-subtitle {
+            font-size: 1.3rem;
+            color: var(--horror-accent);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .project-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .meta-item {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--horror-accent);
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .project-image-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .project-main-image {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(139, 0, 0, 0.3);
+            transition: var(--transition);
+        }
+
+        .project-main-image:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 30px 60px rgba(139, 0, 0, 0.4);
+        }
+
+        /* Content Sections */
+        .content-section {
+            background-color: var(--bg);
+            position: relative;
+        }
+
+        .content-section:nth-child(even) {
+            background-color: rgba(44, 24, 16, 0.2);
+        }
+
+        .section-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .section-text h2 {
+            margin-bottom: 30px;
+        }
+
+        .section-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .highlight-box {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--horror-accent);
+            margin: 20px 0;
+        }
+
+        .highlight-box h4 {
+            color: var(--horror-accent);
+            margin-bottom: 10px;
+        }
+
+        .section-image {
+            position: relative;
+            text-align: center;
+        }
+
+        .section-img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(139, 0, 0, 0.3);
+            transition: var(--transition);
+        }
+
+        .section-img:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 45px rgba(139, 0, 0, 0.4);
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--horror-accent);
+            box-shadow: 0 10px 25px rgba(139, 0, 0, 0.3);
+        }
+
+        .tech-icon {
+            font-size: 2rem;
+            color: var(--horror-accent);
+            margin-bottom: 10px;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Screenshots Grid */
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .screenshot-item {
+            background: var(--bg-card);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(139, 0, 0, 0.3);
+            border: 2px solid transparent;
+        }
+
+        .screenshot-item:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(139, 0, 0, 0.4);
+            border-color: var(--horror-accent);
+        }
+
+        .screenshot-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: var(--transition);
+            filter: brightness(0.9) contrast(1.1);
+        }
+
+        .screenshot-item:hover .screenshot-img {
+            transform: scale(1.05);
+            filter: brightness(1) contrast(1.2);
+        }
+
+        .screenshot-caption {
+            padding: 20px;
+        }
+
+        .screenshot-caption h4 {
+            color: var(--horror-accent);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .screenshot-caption p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+            transition: var(--transition);
+            border-top: 4px solid var(--horror-accent);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(139, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--horror-red), var(--horror-accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .feature-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Call to Action Section */
+        .project-cta {
+            background: linear-gradient(135deg, var(--horror-dark), var(--horror-red));
+            color: white;
+            text-align: center;
+        }
+
+        .cta-content h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .cta-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            background: white;
+            color: var(--horror-red);
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cta-btn.secondary:hover {
+            background: white;
+            color: var(--horror-red);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-dark);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-link:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Animation classes */
+        .animate-on-scroll {
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-in {
+            opacity: 1;
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-fadeInLeft {
+            animation: fadeInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-fadeInRight {
+            animation: fadeInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-scaleIn {
+            animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero-content, .section-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-image {
+                order: -1;
+            }
+            
+            .project-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .screenshots-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background-color: var(--bg);
+                flex-direction: column;
+                align-items: center;
+                padding: 20px 0;
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: var(--transition);
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            
+            .nav-links li {
+                margin: 10px 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tech-stack {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .screenshots-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .screenshot-img {
+                height: 200px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Removed custom cursor elements to restore normal cursor -->
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="logo.png" alt="Logo" class="logo-img">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html#home">Home</a></li>
+                    <li><a href="index.html#about">About</a></li>
+                    <li><a href="index.html#skills">Skills</a></li>
+                    <li><a href="index.html#projects">Projects</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Project Hero Section -->
+    <section class="project-hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text animate-on-scroll" data-animation="fadeInLeft">
+                    <div class="project-subtitle">Gothic Horror Web Application</div>
+                    <h1>Requiem Records</h1>
+                    <p>Requiem Records is not just a web app, it is a ritual of memory and fear. Users step into a gothic, gamified world where their own voice becomes the trigger for horror. This immersive experience combines voice recognition technology with atmospheric storytelling to create a unique interactive horror experience.</p>
+                    
+                    <div class="project-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Duration</div>
+                            <div class="meta-value">3 months</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Team Size</div>
+                            <div class="meta-value">Solo Project</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Industry</div>
+                            <div class="meta-value">Interactive Entertainment</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">My Role</div>
+                            <div class="meta-value">Full-Stack Developer & Game Designer</div>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h4>Core Innovation:</h4>
+                        <p>Revolutionary voice-triggered horror experience that transforms user speech into interactive gameplay elements, creating a personalized and deeply immersive gothic atmosphere.</p>
+                    </div>
+                </div>
+                <div class="project-image-container animate-on-scroll" data-animation="scaleIn">
+                    <img src="rrc.png" alt="Requiem Records Interface" class="project-main-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Challenge Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>The Challenge</h2>
+                <p>Creating an immersive horror experience that goes beyond traditional visual and audio elements by incorporating real-time voice interaction. The challenge was to build a system that could interpret user speech and transform it into meaningful gameplay mechanics while maintaining the atmospheric tension essential to horror storytelling.</p>
+                
+                <div class="highlight-box">
+                    <h4>Key Challenges Addressed:</h4>
+                    <p>• Implementing reliable voice recognition in a web environment<br>
+                    • Creating atmospheric horror elements that respond to user input<br>
+                    • Balancing interactivity with narrative immersion<br>
+                    • Ensuring cross-browser compatibility for voice APIs<br>
+                    • Designing a gothic aesthetic that enhances the horror experience</p>
+                </div>
+                
+                <p>The goal was to create a web application that breaks the fourth wall, making users active participants in their own horror story through voice interaction, while maintaining the eerie atmosphere that defines gothic horror.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>Research & Development</h2>
+                <p>Extensive research was conducted into voice recognition technologies, horror game design principles, and gothic aesthetic elements to create an authentic and engaging experience.</p>
+                
+                <div class="highlight-box">
+                    <h4>Key Research Areas:</h4>
+                    <p>• Web Speech API capabilities and browser support<br>
+                    • Gothic horror visual design and atmospheric elements<br>
+                    • Voice-triggered interaction patterns in gaming<br>
+                    • Audio processing and real-time feedback systems<br>
+                    • User experience design for horror applications</p>
+                </div>
+                
+                <p>The research phase involved studying successful horror games, analyzing voice interaction patterns, and experimenting with different approaches to create tension through user participation.</p>
+                
+                <div class="highlight-box">
+                    <h4>Technical Discoveries:</h4>
+                    <p>• Web Speech API provides robust voice recognition capabilities<br>
+                    • Real-time audio visualization enhances user engagement<br>
+                    • Gothic typography and dark color schemes amplify horror atmosphere<br>
+                    • Progressive enhancement ensures accessibility across devices</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>The Solution</h2>
+                <p>Requiem Records transforms the traditional web experience into an interactive horror ritual where users' voices become the key to unlocking dark secrets. The application combines cutting-edge voice recognition with atmospheric design to create a truly immersive gothic experience.</p>
+                
+                <div class="highlight-box">
+                    <h4>Core Innovation:</h4>
+                    <p>By integrating voice recognition with horror storytelling, Requiem Records creates a unique experience where users must speak to progress, making them active participants in their own horror story rather than passive observers.</p>
+                </div>
+                
+                <h3>Technical Stack</h3>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="tech-name">Python</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fab fa-html5"></i>
+                        </div>
+                        <div class="tech-name">HTML/CSS</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fab fa-js"></i>
+                        </div>
+                        <div class="tech-name">JavaScript</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <div class="tech-name">Web Speech API</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="tech-name">Kiro AI</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="tech-name">Interactive Design</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Screenshots Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>Project Screenshots</h2>
+                <p>Explore the dark and immersive interface of Requiem Records through these screenshots showcasing the gothic horror aesthetic and interactive elements.</p>
+                
+                <div class="screenshots-grid">
+                    <div class="screenshot-item animate-on-scroll" data-animation="fadeInLeft">
+                        <img src="rrc-1.png" alt="Requiem Records Main Interface" class="screenshot-img">
+                        <div class="screenshot-caption">
+                            <h4>Main Interface</h4>
+                            <p>The haunting main screen that welcomes users into the gothic world of Requiem Records</p>
+                        </div>
+                    </div>
+                    
+                    <div class="screenshot-item animate-on-scroll" data-animation="fadeInUp">
+                        <img src="rrc-3.png" alt="Voice Recognition Interface" class="screenshot-img">
+                        <div class="screenshot-caption">
+                            <h4>Voice Recognition System</h4>
+                            <p>Interactive voice recognition interface where users speak to trigger horror elements</p>
+                        </div>
+                    </div>
+                    
+                    <div class="screenshot-item animate-on-scroll" data-animation="fadeInRight">
+                        <img src="rrc-4.png" alt="Gothic Horror Elements" class="screenshot-img">
+                        <div class="screenshot-caption">
+                            <h4>Gothic Horror Elements</h4>
+                            <p>Atmospheric design elements that respond to user voice input and create immersive horror experience</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-microphone-alt"></i>
+                        </div>
+                        <div class="feature-title">Voice Recognition</div>
+                        <div class="feature-description">Advanced speech recognition that interprets user commands and transforms them into interactive elements within the horror narrative.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-ghost"></i>
+                        </div>
+                        <div class="feature-title">Gothic Atmosphere</div>
+                        <div class="feature-description">Immersive gothic design with dark aesthetics, atmospheric sounds, and visual effects that respond to user interactions.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="feature-title">Interactive Storytelling</div>
+                        <div class="feature-description">Dynamic narrative that adapts based on user voice input, creating a personalized horror experience for each player.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        <div class="feature-title">Real-time Audio Processing</div>
+                        <div class="feature-description">Live audio visualization and processing that creates immediate feedback and enhances the immersive experience.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="feature-title">Cross-Platform Compatibility</div>
+                        <div class="feature-description">Responsive design that works across different devices and browsers, ensuring accessibility for all users.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="feature-title">AI Integration</div>
+                        <div class="feature-description">Kiro AI integration for enhanced interaction patterns and intelligent response generation based on user behavior.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>Results & Impact</h2>
+                <p>Requiem Records successfully demonstrates the potential of voice-interactive web applications in creating immersive entertainment experiences. The project showcases innovative use of web technologies to break traditional interaction barriers.</p>
+                
+                <div class="highlight-box">
+                    <h4>Key Achievements:</h4>
+                    <p>• Successfully implemented voice recognition in a web environment<br>
+                    • Created a unique horror experience that engages users actively<br>
+                    • Demonstrated innovative use of Web Speech API<br>
+                    • Achieved seamless integration of AI and interactive design<br>
+                    • Established a new paradigm for voice-driven web applications</p>
+                </div>
+                
+                <p>The project serves as a proof of concept for the future of interactive web experiences, showing how voice technology can be leveraged to create more engaging and immersive digital entertainment.</p>
+                
+                <div class="highlight-box">
+                    <h4>Technical Impact:</h4>
+                    <p>• Pioneered voice-interactive horror web applications<br>
+                    • Demonstrated cross-browser voice API implementation<br>
+                    • Created reusable patterns for voice-driven interfaces<br>
+                    • Established best practices for atmospheric web design</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="project-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Experience the Horror</h2>
+                <p>Step into the gothic world of Requiem Records and discover how your voice can unlock the darkest secrets. Are you brave enough to speak into the void?</p>
+                <div class="cta-buttons">
+                    <a href="https://krithika-r2007.github.io/Requiemrecords/" class="cta-btn" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Live Demo
+                    </a>
+                    <a href="https://github.com/Krithika-R2007/Requiemrecords" class="cta-btn secondary" target="_blank">
+                        <i class="fab fa-github"></i>
+                        View Code
+                    </a>
+                    <a href="https://dev.to/kirodotdev/requiem-memory-how-kiro-haunted-my-codebase-into-a-screaming-success-43pm" class="cta-btn secondary" target="_blank">
+                        <i class="fas fa-blog"></i>
+                        Read Blog Post
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <a href="index.html" class="logo">
+                    <img src="logo.png" alt="Logo" class="logo-img" style="height: 80px;">
+                </a>
+                <div class="social-links">
+                    <a href="https://github.com/Krithika-R2007" class="social-link" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/krithika-r-b9a2b5259" class="social-link" target="_blank">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="mailto:krithikar2007@gmail.com" class="social-link">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+                <p class="copyright">&copy; 2024 Krithika R. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="cursor-system.js"></script>
+    <script src="animations.js"></script>
+    <script src="mobile-optimizations.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const icon = themeToggle.querySelector('i');
+
+        // Check for saved theme preference or default to dark mode
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        if (currentTheme === 'light') {
+            body.classList.add('light-mode');
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'light');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.querySelector('.nav-links');
+        
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+    </script>
+    <script src="cute-aesthetic-system.js"></script>
+    <script src="animations.js"></script>
+    <script>
+        // Initialize scroll animations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up scroll animations for elements
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+            animatedElements.forEach(element => {
+                const animationType = element.dataset.animation || 'fadeInUp';
+                if (typeof animationController !== 'undefined') {
+                    animationController.observe(element, animationType);
+                } else {
+                    // Fallback: make element visible immediately
+                    element.style.opacity = '1';
+                    element.style.transform = 'none';
+                }
+            });
+            
+            // Initialize animations for elements already in viewport
+            setTimeout(() => {
+                if (typeof animationController !== 'undefined') {
+                    animationController.initializeVisibleElements();
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
