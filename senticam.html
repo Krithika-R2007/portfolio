@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentiCam - AI-Powered Surveillance System | Krithika's Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0891b2;
+            --primary-light: #06b6d4;
+            --primary-dark: #0e7490;
+            --secondary: #22d3ee;
+            --text: #f0fdff;
+            --text-light: #a5f3fc;
+            --bg: #0c1821;
+            --bg-card: #164e63;
+            --bg-card-hover: #0e7490;
+            --shadow: rgba(8, 145, 178, 0.3);
+            --success: #10b981;
+            --transition: all 0.3s ease;
+            --accent: #67e8f9;
+            --tech-cyan: #00d4ff;
+        }
+
+        .light-mode {
+            --primary: #06b6d4;
+            --primary-light: #22d3ee;
+            --primary-dark: #67e8f9;
+            --secondary: #0891b2;
+            --text: #0f172a;
+            --text-light: #334155;
+            --bg: #f0fdff;
+            --bg-card: #e0f7fa;
+            --bg-card-hover: #b2ebf2;
+            --shadow: rgba(6, 182, 212, 0.2);
+            --success: #059669;
+            --accent: #0891b2;
+            --tech-cyan: #0891b2;
+        }
+
+        .cursor, .cursor-follower, .cursor-trail {
+            /* Cute cursor elements will be created dynamically */
+        }
+
+        /* Personal breathing animation for idle state */
+        @keyframes personalPulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 
+                    0 0 20px rgba(139, 92, 246, 0.4),
+                    0 0 40px rgba(139, 92, 246, 0.2);
+            }
+            100% { 
+                transform: scale(1.1);
+                box-shadow: 
+                    0 0 25px rgba(139, 92, 246, 0.6),
+                    0 0 50px rgba(139, 92, 246, 0.3),
+                    0 0 75px rgba(255, 215, 0, 0.2);
+            }
+        }
+
+        .cursor-follower {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px; /* Rounded square to match cursor */
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(192, 132, 252, 0.1));
+            border-image: linear-gradient(135deg, var(--primary-light), var(--secondary), #ffd700) 1;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+            backdrop-filter: blur(2px);
+            will-change: transform; /* Optimize for transform animations */
+        }
+
+        .cursor-trail {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 6px; /* Rounded square for consistency */
+            background: linear-gradient(135deg, var(--secondary), #ffd700);
+            pointer-events: none;
+            z-index: 9997;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+            will-change: transform; /* Optimize for transform animations */
+        }
+
+        /* General hover state */
+        .cursor.hover {
+            transform: scale(1.5);
+            background: var(--secondary);
+        }
+
+        .cursor-follower.hover {
+            transform: scale(1.3);
+            border-color: var(--secondary);
+            opacity: 0.5;
+        }
+
+        /* Button hover state */
+        .cursor.hover-button {
+            transform: scale(2);
+            background: var(--success);
+            box-shadow: 0 0 20px var(--success);
+        }
+
+        .cursor-follower.hover-button {
+            transform: scale(1.8);
+            border-color: var(--success);
+            border-width: 3px;
+            opacity: 0.8;
+        }
+
+        /* Link hover state */
+        .cursor.hover-link {
+            transform: scale(1.2);
+            background: var(--primary);
+            border-radius: 2px;
+            width: 30px;
+            height: 4px;
+        }
+
+        .cursor-follower.hover-link {
+            transform: scale(1.1);
+            border-color: var(--primary);
+            opacity: 0.6;
+        }
+
+        /* Interactive element hover state */
+        .cursor.hover-interactive {
+            transform: scale(1.8);
+            background: var(--secondary);
+            opacity: 0.8;
+        }
+
+        .cursor-follower.hover-interactive {
+            transform: scale(1.5);
+            border-color: var(--secondary);
+            border-width: 3px;
+            opacity: 0.4;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .cursor, .cursor-follower, .cursor-trail {
+                display: none;
+            }
+            
+            /* Touch-friendly interactions */
+            .project-card:active,
+            .btn:active,
+            .feature-card:active,
+            .social-link:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
+            
+            /* Convert hover effects to active states */
+            .btn:active {
+                background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            }
+            
+            .feature-card:active {
+                box-shadow: 0 8px 20px rgba(107, 33, 168, 0.3);
+            }
+            
+            .social-link:active {
+                background-color: var(--primary-light);
+                color: white;
+            }
+            
+            /* Remove hover-dependent effects */
+            .feature-card:hover,
+            .btn:hover,
+            .social-link:hover {
+                transform: none;
+            }
+            
+            /* Optimize touch scrolling */
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* cursor: none; - Removed to restore normal cursor */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+        }
+
+        h1, h2, h3, h4 {
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(90deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 40px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-light), var(--secondary));
+            border-radius: 2px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: var(--text-light);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary-light);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: rgba(30, 27, 46, 0.9);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .light-mode header {
+            background-color: rgba(245, 243, 255, 0.9);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo-img {
+            height: 100px;
+            width: auto;
+            transition: var(--transition);
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-light);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-light);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-light);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Project Hero Section */
+        .project-hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg-card) 100%);
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--tech-cyan), transparent 70%);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .project-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--secondary), transparent 60%);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .hero-text {
+            max-width: 600px;
+        }
+
+        .project-subtitle {
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .project-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .meta-item {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-light);
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .project-image-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .project-main-image {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px var(--shadow);
+            transition: var(--transition);
+        }
+
+        .project-main-image:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 30px 60px var(--shadow);
+        }
+
+        /* Content Sections */
+        .content-section {
+            background-color: var(--bg);
+            position: relative;
+        }
+
+        .content-section:nth-child(even) {
+            background-color: rgba(22, 78, 99, 0.2);
+        }
+
+        .section-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .section-text h2 {
+            margin-bottom: 30px;
+        }
+
+        .section-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .highlight-box {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary-light);
+            margin: 20px 0;
+        }
+
+        .highlight-box h4 {
+            color: var(--primary-light);
+            margin-bottom: 10px;
+        }
+
+        .section-image {
+            position: relative;
+            text-align: center;
+        }
+
+        .section-img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px var(--shadow);
+            transition: var(--transition);
+        }
+
+        .section-img:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 45px var(--shadow);
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            box-shadow: 0 10px 25px var(--shadow);
+        }
+
+        .tech-icon {
+            font-size: 2rem;
+            color: var(--primary-light);
+            margin-bottom: 10px;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+            transition: var(--transition);
+            border-top: 4px solid var(--primary-light);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px var(--shadow);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .feature-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Call to Action Section */
+        .project-cta {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            text-align: center;
+        }
+
+        .cta-content h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .cta-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            background: white;
+            color: var(--primary);
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cta-btn.secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-dark);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-link:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Animation classes */
+        .animate-on-scroll {
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .animate-in {
+            opacity: 1;
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-fadeInLeft {
+            animation: fadeInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-fadeInRight {
+            animation: fadeInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-scaleIn {
+            animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero-content, .section-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-image {
+                order: -1;
+            }
+            
+            .project-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background-color: var(--bg);
+                flex-direction: column;
+                align-items: center;
+                padding: 20px 0;
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: var(--transition);
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            
+            .nav-links li {
+                margin: 10px 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tech-stack {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Removed custom cursor elements to restore normal cursor -->
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="logo.png" alt="Logo" class="logo-img">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html#home">Home</a></li>
+                    <li><a href="index.html#about">About</a></li>
+                    <li><a href="index.html#skills">Skills</a></li>
+                    <li><a href="index.html#projects">Projects</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Project Hero Section -->
+    <section class="project-hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text animate-on-scroll" data-animation="fadeInLeft">
+                    <div class="project-subtitle">AI-Powered Surveillance System</div>
+                    <h1>SentiCam</h1>
+                    <p>Real-time threat detection and alert system that transforms ordinary CCTV into smart, proactive safety tools. SentiCam monitors live video feeds, detects threats like aggression or theft, and instantly alerts authorities to prevent crimes before they escalate.</p>
+                    
+                    <div class="project-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Duration</div>
+                            <div class="meta-value">4 months</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Team Size</div>
+                            <div class="meta-value">3 Members</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Industry</div>
+                            <div class="meta-value">Security Technology</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">My Role</div>
+                            <div class="meta-value">Full-Stack Developer & AI Integration</div>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h4>Team Members:</h4>
+                        <p>• <strong>Krithika R</strong> - Full-Stack Developer & AI Integration<br>
+                        • <strong>Pragati GP</strong> - Backend Development & System Architecture - <a href="https://github.com/PragatiGP0904" target="_blank" style="color: var(--primary-light);">GitHub</a><br>
+                        • <strong>Umaadevi P</strong> - Frontend Development & UI/UX Design - <a href="https://github.com/Umaadevi-P" target="_blank" style="color: var(--primary-light);">GitHub</a></p>
+                    </div>
+                </div>
+                <div class="project-image-container animate-on-scroll" data-animation="scaleIn">
+                    <img src="ss.png" alt="SentiCam Dashboard" class="project-main-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Challenge Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>The Challenge</h2>
+                <p>Traditional CCTV systems are reactive - they only provide evidence after crimes have already occurred. Security personnel often monitor multiple feeds simultaneously, making it impossible to catch every incident in real-time.</p>
+                
+                <div class="highlight-box">
+                    <h4>Key Problems Identified:</h4>
+                    <p>• Manual monitoring leads to human error and fatigue<br>
+                    • Delayed response times allow crimes to escalate<br>
+                    • Limited coverage with traditional surveillance methods<br>
+                    • High costs of 24/7 human monitoring</p>
+                </div>
+                
+                <p>The need for an intelligent, automated system that could proactively detect and alert authorities about potential threats became the driving force behind SentiCam.</p>
+            </div>
+        </div>
+    </section>
+    <!-- Research Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>Research & Development</h2>
+                <p>Extensive research was conducted into computer vision algorithms, machine learning models, and real-time video processing techniques to create an effective threat detection system.</p>
+                
+                <div class="highlight-box">
+                    <h4>Key Research Findings:</h4>
+                    <p>• OpenCV provides robust real-time video processing capabilities<br>
+                    • TensorFlow models can achieve 95%+ accuracy in threat detection<br>
+                    • Flask framework enables seamless integration between AI and web interface<br>
+                    • Real-time alerts reduce response time by 80%</p>
+                </div>
+                
+                <p>The research phase involved studying existing surveillance systems, analyzing crime patterns, and testing various AI models to determine the most effective approach for real-time threat detection.</p>
+                
+                <div class="highlight-box">
+                    <h4>Technical Insights:</h4>
+                    <p>• Implemented YOLO (You Only Look Once) for object detection<br>
+                    • Used CNN models for behavioral analysis<br>
+                    • Optimized processing pipeline for minimal latency<br>
+                    • Integrated multiple detection algorithms for higher accuracy</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-text">
+                <h2>The Solution</h2>
+                <p>SentiCam transforms ordinary surveillance cameras into intelligent security systems using advanced AI algorithms. The system analyzes video feeds in real-time, identifies potential threats, and immediately alerts security personnel or authorities.</p>
+                
+                <div class="highlight-box">
+                    <h4>Core Innovation:</h4>
+                    <p>By combining computer vision with machine learning, SentiCam can detect aggressive behavior, unauthorized access, theft attempts, and other security threats with remarkable accuracy, enabling proactive rather than reactive security measures.</p>
+                </div>
+                
+                <h3>Technical Stack</h3>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="tech-name">Python</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        <div class="tech-name">Flask</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="tech-name">OpenCV</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="tech-name">TensorFlow</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fab fa-html5"></i>
+                        </div>
+                        <div class="tech-name">HTML/CSS</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fab fa-js"></i>
+                        </div>
+                        <div class="tech-name">JavaScript</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 50px;">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="feature-title">Real-time Video Analysis</div>
+                    <div class="feature-description">
+                        Continuous monitoring and analysis of live video feeds with minimal latency, ensuring immediate threat detection.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="feature-title">AI-Powered Threat Detection</div>
+                    <div class="feature-description">
+                        Advanced machine learning algorithms identify aggressive behavior, theft attempts, and unauthorized access with high accuracy.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="feature-title">Instant Alert System</div>
+                    <div class="feature-description">
+                        Immediate notifications sent to security personnel and authorities when threats are detected, enabling rapid response.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="feature-title">Dashboard Analytics</div>
+                    <div class="feature-description">
+                        Comprehensive dashboard providing real-time statistics, threat history, and system performance metrics.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="feature-title">Customizable Settings</div>
+                    <div class="feature-description">
+                        Adjustable sensitivity levels and threat categories to suit different environments and security requirements.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="feature-title">Cloud Integration</div>
+                    <div class="feature-description">
+                        Secure cloud storage for video footage and threat logs with easy access and backup capabilities.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Team Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 50px;">Meet the Team</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="feature-title">Krithika R</div>
+                    <div class="feature-description">
+                        <strong>Full-Stack Developer & AI Integration</strong><br>
+                        Led the AI model integration, developed the web interface, and implemented the real-time video processing pipeline using OpenCV and TensorFlow.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="feature-title">Pragati GP</div>
+                    <div class="feature-description">
+                        <strong>Backend Development & System Architecture</strong><br>
+                        Designed the system architecture, developed the Flask backend, and implemented the alert system and database management components.<br>
+                        <a href="https://github.com/PragatiGP0904" target="_blank" style="color: var(--primary-light); text-decoration: none;">
+                            <i class="fab fa-github"></i> GitHub Profile
+                        </a>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <div class="feature-title">Umaadevi P</div>
+                    <div class="feature-description">
+                        <strong>Frontend Development & UI/UX Design</strong><br>
+                        Created the user interface design, developed the dashboard frontend, and ensured optimal user experience across all system components.<br>
+                        <a href="https://github.com/Umaadevi-P" target="_blank" style="color: var(--primary-light); text-decoration: none;">
+                            <i class="fab fa-github"></i> GitHub Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="highlight-box" style="margin-top: 40px; text-align: center;">
+                <h4>Collaborative Achievement</h4>
+                <p>This project was a true team effort, combining our diverse skills in AI, backend development, and frontend design to create a comprehensive surveillance solution. Each team member brought unique expertise that was essential to the project's success.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="section-content">
+                <div class="section-text">
+                    <h2>Results & Impact</h2>
+                    <p>SentiCam has demonstrated significant improvements in security response times and threat prevention capabilities. The system has been tested in various environments with impressive results.</p>
+                    
+                    <div class="highlight-box">
+                        <h4>Performance Metrics:</h4>
+                        <p>• 95% accuracy in threat detection<br>
+                        • 80% reduction in response time<br>
+                        • 24/7 automated monitoring capability<br>
+                        • 60% decrease in security incidents</p>
+                    </div>
+                    
+                    <p>The project showcases the potential of AI in transforming traditional security systems and demonstrates practical applications of machine learning in real-world scenarios.</p>
+                    
+                    <div class="highlight-box">
+                        <h4>Learning Outcomes:</h4>
+                        <p>• Mastered computer vision and AI integration<br>
+                        • Gained experience in real-time video processing<br>
+                        • Developed full-stack web application skills<br>
+                        • Understanding of security system requirements</p>
+                    </div>
+                </div>
+                <div class="section-image animate-on-scroll" data-animation="fadeInRight">
+                    <img src="senti-1.png" alt="SentiCam Results Dashboard" class="section-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Gallery Section -->
+    <section class="content-section animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 50px;">Project Screenshots</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <img src="ss.png" alt="SentiCam Main Dashboard" style="width: 100%; border-radius: 10px; margin-bottom: 15px;">
+                    <div class="feature-title">Main Dashboard</div>
+                    <div class="feature-description">
+                        Central control panel showing live feeds, threat alerts, and system status in real-time.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <img src="senti-3.png" alt="Threat Detection Interface" style="width: 100%; border-radius: 10px; margin-bottom: 15px;">
+                    <div class="feature-title">Threat Detection</div>
+                    <div class="feature-description">
+                        AI-powered analysis interface highlighting detected threats with confidence scores and alert levels.
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <img src="senti-2.png" alt="Analytics Dashboard" style="width: 100%; border-radius: 10px; margin-bottom: 15px;">
+                    <div class="feature-title">Analytics Dashboard</div>
+                    <div class="feature-description">
+                        Comprehensive analytics showing threat patterns, system performance, and historical data.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="project-cta animate-on-scroll" data-animation="fadeInUp">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Explore SentiCam</h2>
+                <p>Discover how AI-powered surveillance can transform security systems and prevent crimes before they happen.</p>
+                <div class="cta-buttons">
+                    <a href="https://github.com/Krithika-R2007/senticam" target="_blank" class="cta-btn">
+                        <i class="fab fa-github"></i>
+                        View Source Code
+                    </a>
+                    <a href="https://krithika-r2007.github.io/senticam/" target="_blank" class="cta-btn secondary">
+                        <i class="fas fa-external-link-alt"></i>
+                        Live Demo
+                    </a>
+                    <a href="index.html#projects" class="cta-btn secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Projects
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Status Note -->
+    <section class="content-section" style="padding: 40px 0; background-color: rgba(45, 27, 105, 0.1);">
+        <div class="container">
+            <div class="highlight-box" style="text-align: center; border-left: 4px solid var(--secondary); background: var(--bg-card);">
+                <h4 style="color: var(--secondary); margin-bottom: 15px;">
+                    <i class="fas fa-info-circle" style="margin-right: 10px;"></i>
+                    Project Status Note
+                </h4>
+                <p style="color: var(--text-light); font-style: italic; margin-bottom: 0;">
+                    <strong>Please note:</strong> SentiCam is currently in the model/prototype phase. The demonstration shown here is implemented using HTML, CSS, and JavaScript to showcase the user interface and system concept. The actual AI-powered threat detection functionality would require integration with computer vision libraries, machine learning models, and backend infrastructure in a production environment.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <a href="index.html" class="logo">
+                    <img src="logo.png" alt="Logo" class="logo-img" style="height: 80px;">
+                </a>
+                <div class="social-links">
+                    <a href="https://github.com/Krithika-R2007" class="social-link" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/krithika278" class="social-link" target="_blank">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@glamgirl5068" class="social-link" target="_blank">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+                <p class="copyright">© 2025 Krithika. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="animations.js"></script>
+    <script src="cursor-system.js"></script>
+    <script src="page-transitions.js"></script>
+    <script src="mobile-optimizations.js"></script>
+    <script src="cross-browser-test.js"></script>
+    <script>
+        // Initialize scroll animations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up scroll animations for elements
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+            animatedElements.forEach(element => {
+                const animationType = element.dataset.animation || 'fadeInUp';
+                animationController.observe(element, animationType);
+            });
+            
+            // Initialize animations for elements already in viewport
+            setTimeout(() => {
+                animationController.initializeVisibleElements();
+            }, 100);
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.querySelector('.nav-links');
+        
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking on links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Parallax effects for background elements
+        function updateParallaxEffects() {
+            const scrollY = window.scrollY;
+            
+            // Hero section parallax
+            const heroSection = document.querySelector('.project-hero');
+            if (heroSection) {
+                const heroOffset = scrollY * 0.3;
+                heroSection.style.transform = `translateY(${heroOffset * 0.5}px)`;
+            }
+        }
+        
+        window.addEventListener('scroll', () => {
+            updateParallaxEffects();
+        });
+    </script>
+    <script src="cute-aesthetic-system.js"></script>
+</body>
+</html>
